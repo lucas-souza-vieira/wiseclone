@@ -18,6 +18,8 @@ O sistema escolhido é o **WiseClone**, uma plataforma financeira internacional 
 
 A escolha de um sistema financeiro é estratégica: domínios financeiros são alvos frequentes de ataques reais e naturalmente concentram dados sensíveis (credenciais, saldos, histórico de movimentações), tornando a superfície de ataque ampla e relevante para todas as cinco categorias de análise exigidas.
 
+> 🔗 **Transparência e Auditoria:** Todo o código fonte, arquivos de configuração da infraestrutura, scripts do pipeline de segurança (CI/CD) e os artefatos brutos gerados durante os testes (logs e relatórios das ferramentas) podem ser conferidos integralmente no repositório público do projeto: [https://github.com/lucas-souza-vieira/wiseclone](https://github.com/lucas-souza-vieira/wiseclone).
+
 ### 1.2 Funcionalidades do Sistema
 
 | Funcionalidade | Descrição |
