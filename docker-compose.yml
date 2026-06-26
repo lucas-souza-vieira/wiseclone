@@ -1,0 +1,53 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: ./backend
+      dockerfile: ../Dockerfile
+    container_name: wiseclone_api
+    ports:
+      - "8000:8000"
+    environment:
+      # ⚠️  VULNERABILIDADE: Credenciais hardcoded no docker-compose (Gitleaks / Checkov)
+      DATABASE_URL: postgresql://wiseclone:wiseclone123@db:5432/wiseclone
+      SECRET_KEY: wiseclone-jwt-secret-key-2024-super-secret
+      DEBUG: "true"
+    depends_on:
+      - db
+    # CKV_DOCKER_COMPOSE_1: Sem resource limits definidos
+    # CKV2_DOCKER_1: Sem security_opt configurado (no-new-privileges)
+    restart: unless-stopped
+
+  db:
+    image: postgres:13
+    container_name: wiseclone_db
+    # ⚠️  VULNERABILIDADE: Porta do banco exposta ao host (CKV_DOCKER_COMPOSE_2)
+    # Deveria ser apenas acessível internamente na rede docker
+    ports:
+      - "5432:5432"
+    environment:
+      # ⚠️  VULNERABILIDADE: Senha fraca e hardcoded (CKV_DOCKER_COMPOSE_3)
+      POSTGRES_DB: wiseclone
+      POSTGRES_USER: wiseclone
+      POSTGRES_PASSWORD: wiseclone123
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    # CKV_DOCKER_COMPOSE_1: Sem resource limits
+    # CKV2_DOCKER_1: Sem read_only: true
+
+  frontend:
+    image: nginx:alpine
+    container_name: wiseclone_frontend
+    ports:
+      - "8080:80"
+    volumes:
+      - ./frontend:/usr/share/nginx/html:ro
+    depends_on:
+      - app
+
+volumes:
+  postgres_data:
+
+# ⚠️  VULNERABILIDADE: Sem redes customizadas com isolamento (CKV_DOCKER_COMPOSE_4)
+# Todos os serviços compartilham a mesma rede padrão

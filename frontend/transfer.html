@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Transferir — WiseClone</title>
+  <meta name="description" content="Envie dinheiro internacionalmente com câmbio automático e taxas transparentes." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/css/style.css" />
+</head>
+<body>
+<div class="app-wrapper">
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <svg width="28" height="28" viewBox="0 0 48 48" fill="none">
+        <circle cx="24" cy="24" r="24" fill="rgba(99,102,241,0.2)"/>
+        <path d="M14 24C14 18.477 18.477 14 24 14s10 4.477 10 10-4.477 10-10 10S14 29.523 14 24z" fill="#818cf8"/>
+      </svg>
+      <span>WiseClone</span>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-section">
+        <div class="nav-section-title">Principal</div>
+        <a href="/index.html" class="nav-link"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>Dashboard</a>
+        <a href="/transfer.html" class="nav-link active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg>Transferir</a>
+        <a href="/exchange.html" class="nav-link"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 16V4m0 0L3 8m4-4l4 4M17 8v12m0 0l4-4m-4 4l-4-4"/></svg>Câmbio</a>
+      </div>
+      <div class="nav-section">
+        <div class="nav-section-title">Conta</div>
+        <a href="#" class="nav-link" onclick="logout()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9"/></svg>Sair</a>
+      </div>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="user-info">
+        <div class="user-avatar" id="sidebar-avatar">U</div>
+        <div>
+          <div class="user-name" id="sidebar-user-name">Carregando...</div>
+          <div class="user-email" id="sidebar-user-email"></div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <main class="main-content">
+    <div class="page-header">
+      <h1 class="page-title">Enviar Dinheiro</h1>
+      <p class="page-subtitle">Transfira entre moedas com câmbio automático</p>
+    </div>
+
+    <div class="transfer-grid">
+      <!-- Transfer Form -->
+      <div class="card">
+        <div class="card-title">Detalhes da Transferência</div>
+        <form id="transfer-form" novalidate style="margin-top:1rem">
+          <div class="form-group">
+            <label class="form-label" for="receiver_email">E-mail do destinatário</label>
+            <input id="receiver_email" name="receiver_email" type="email"
+              class="form-input" placeholder="destinatario@email.com" required />
+          </div>
+
+          <div class="grid-2" style="gap:1rem">
+            <div class="form-group">
+              <label class="form-label" for="from-currency">Moeda de origem</label>
+              <select id="from-currency" name="currency_from" class="form-select"></select>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="to-currency">Moeda destino</label>
+              <select id="to-currency" name="currency_to" class="form-select"></select>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="amount">Valor a enviar</label>
+            <input id="amount" name="amount" type="number" step="0.01" min="0.01"
+              class="form-input" placeholder="0.00" required />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="description">Descrição (opcional)</label>
+            <input id="description" name="description" type="text"
+              class="form-input" placeholder="Ex: Pagamento de aluguel" />
+          </div>
+
+          <button type="submit" class="btn btn-primary">🚀 Enviar Dinheiro</button>
+        </form>
+      </div>
+
+      <!-- Preview -->
+      <div>
+        <div class="card" style="margin-bottom:1.5rem">
+          <div class="card-title">Resumo da Transferência</div>
+          <div class="transfer-preview" style="margin-top:1rem">
+            <div class="preview-row">
+              <span class="key">Valor enviado</span>
+              <span id="preview-amount">—</span>
+            </div>
+            <div class="preview-row">
+              <span class="key">Taxa de serviço</span>
+              <span id="preview-fee" style="color:var(--accent-yellow)">—</span>
+            </div>
+            <div class="preview-row">
+              <span class="key">Taxa de câmbio</span>
+              <span id="preview-rate" style="color:var(--text-secondary);font-size:0.85rem">—</span>
+            </div>
+            <div class="preview-row">
+              <span class="key">Destinatário recebe</span>
+              <span id="preview-received" style="color:var(--accent-green)">—</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="card" style="background:rgba(16,185,129,0.05);border-color:rgba(16,185,129,0.2)">
+          <div style="font-size:0.85rem;color:var(--text-secondary)">
+            <div style="font-weight:600;color:var(--accent-green);margin-bottom:0.5rem">✅ Transferência segura</div>
+            <ul style="padding-left:1.2rem;display:flex;flex-direction:column;gap:0.3rem">
+              <li>Câmbio calculado em tempo real</li>
+              <li>Taxa única e transparente (0.5% + taxa fixa)</li>
+              <li>Transferência processada imediatamente</li>
+              <li>Histórico disponível no dashboard</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<div id="toast-container" class="toast-container"></div>
+<script src="/js/app.js"></script>
+<script>initTransfer();</script>
+</body>
+</html>

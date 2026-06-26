@@ -1,0 +1,7 @@
+# Regras de supressão para o OWASP ZAP
+# Formato: rule_id	IGNORE/WARN/FAIL	description
+# Referência: https://www.zaproxy.org/docs/docker/baseline-scan/
+
+# 10015	IGNORE	Incomplete or No Cache-control Header Set — aceito em API interna
+# 10027	IGNORE	Information Disclosure - Suspicious Comments — comentários de dev
+10054	IGNORE	Cookie Without SameSite Attribute — API stateless, sem cookies de sessão

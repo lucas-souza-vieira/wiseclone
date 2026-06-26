@@ -1,0 +1,24 @@
+# ⚠️  VERSÕES PROPOSITALMENTE DESATUALIZADAS PARA FINS ACADÊMICOS (DEVSECOPS)
+# As versões abaixo contêm CVEs conhecidas que serão detectadas pelo SCA (pip-audit)
+
+fastapi==0.95.2
+uvicorn[standard]==0.22.0
+sqlalchemy==1.4.46
+psycopg2-binary==2.9.6
+python-multipart==0.0.5
+
+# CVE-2024-33663 - python-jose: algoritmo "none" não rejeitado (JWT confusion attack)
+python-jose[cryptography]==3.3.0
+
+# CVE-2023-23931 - cryptography: Bleichenbacher timing oracle em RSA decryption
+cryptography==39.0.1
+
+# CVE-2023-44271 - Pillow: uncontrolled resource consumption via crafted image
+Pillow==9.4.0
+
+# bcrypt 3.2.2 compatível com passlib 1.7.4 (bcrypt 4.x mudou API internamente)
+bcrypt==3.2.2
+passlib[bcrypt]==1.7.4
+pydantic[email]==1.10.7
+requests==2.28.2
+python-dotenv==1.0.0

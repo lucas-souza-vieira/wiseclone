@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Câmbio — WiseClone</title>
+  <meta name="description" content="Consulte taxas de câmbio em tempo real e simule conversões entre moedas." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/css/style.css" />
+</head>
+<body>
+<div class="app-wrapper">
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <svg width="28" height="28" viewBox="0 0 48 48" fill="none">
+        <circle cx="24" cy="24" r="24" fill="rgba(99,102,241,0.2)"/>
+        <path d="M14 24C14 18.477 18.477 14 24 14s10 4.477 10 10-4.477 10-10 10S14 29.523 14 24z" fill="#818cf8"/>
+      </svg>
+      <span>WiseClone</span>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-section">
+        <div class="nav-section-title">Principal</div>
+        <a href="/index.html" class="nav-link"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>Dashboard</a>
+        <a href="/transfer.html" class="nav-link"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg>Transferir</a>
+        <a href="/exchange.html" class="nav-link active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 16V4m0 0L3 8m4-4l4 4M17 8v12m0 0l4-4m-4 4l-4-4"/></svg>Câmbio</a>
+      </div>
+      <div class="nav-section">
+        <div class="nav-section-title">Conta</div>
+        <a href="#" class="nav-link" onclick="logout()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9"/></svg>Sair</a>
+      </div>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="user-info">
+        <div class="user-avatar" id="sidebar-avatar">U</div>
+        <div>
+          <div class="user-name" id="sidebar-user-name">Carregando...</div>
+          <div class="user-email" id="sidebar-user-email"></div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <main class="main-content">
+    <div class="page-header">
+      <h1 class="page-title">Taxas de Câmbio</h1>
+      <p class="page-subtitle">Consulte taxas e simule conversões em tempo real</p>
+    </div>
+
+    <div class="grid-2" style="margin-bottom:2rem">
+      <!-- Calculator -->
+      <div class="card">
+        <div class="card-title">Calculadora de Câmbio</div>
+        <div style="margin-top:1rem">
+          <div class="form-group">
+            <label class="form-label">Valor</label>
+            <input id="calc-amount" type="number" step="0.01" class="form-input" placeholder="0.00" value="100" />
+          </div>
+          <div class="exchange-inputs" style="display:grid;grid-template-columns:1fr auto 1fr;align-items:end;gap:1rem;margin-bottom:1.2rem">
+            <div class="form-group" style="margin:0">
+              <label class="form-label">De</label>
+              <select id="calc-from" class="form-select"></select>
+            </div>
+            <button id="swap-btn" class="swap-btn" title="Inverter moedas">⇄</button>
+            <div class="form-group" style="margin:0">
+              <label class="form-label">Para</label>
+              <select id="calc-to" class="form-select"></select>
+            </div>
+          </div>
+
+          <div class="rate-display">
+            <div>
+              <div style="font-size:0.78rem;color:var(--text-muted);margin-bottom:0.2rem">Você receberia</div>
+              <div class="rate-value" id="calc-result" style="color:var(--accent-green)">—</div>
+            </div>
+            <div style="text-align:right;font-size:0.78rem;color:var(--text-secondary)" id="calc-rate-info">
+              Preencha os campos acima
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Info Card -->
+      <div class="card" style="background:var(--gradient-card)">
+        <div class="card-title">ℹ️ Como funciona o câmbio</div>
+        <div style="margin-top:1rem;display:flex;flex-direction:column;gap:1rem">
+          <div style="display:flex;gap:0.75rem;align-items:flex-start">
+            <span style="font-size:1.3rem">📊</span>
+            <div>
+              <div style="font-weight:600;font-size:0.9rem">Taxas atualizadas</div>
+              <div style="font-size:0.82rem;color:var(--text-secondary)">As taxas refletem o mercado interbancário com spread mínimo</div>
+            </div>
+          </div>
+          <div style="display:flex;gap:0.75rem;align-items:flex-start">
+            <span style="font-size:1.3rem">💸</span>
+            <div>
+              <div style="font-weight:600;font-size:0.9rem">Taxa de serviço</div>
+              <div style="font-size:0.82rem;color:var(--text-secondary)">0.5% do valor + taxa fixa por moeda de origem</div>
+            </div>
+          </div>
+          <div style="display:flex;gap:0.75rem;align-items:flex-start">
+            <span style="font-size:1.3rem">⚡</span>
+            <div>
+              <div style="font-weight:600;font-size:0.9rem">Processamento imediato</div>
+              <div style="font-size:0.82rem;color:var(--text-secondary)">Transferências são creditadas instantaneamente na plataforma</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Rates Table -->
+    <div class="card">
+      <div class="card-title">Tabela de Taxas de Câmbio</div>
+      <div class="table-wrapper" style="margin-top:1rem">
+        <table>
+          <thead>
+            <tr>
+              <th>De</th>
+              <th>Para</th>
+              <th>Taxa</th>
+            </tr>
+          </thead>
+          <tbody id="rates-body">
+            <tr><td colspan="3" style="text-align:center;color:var(--text-muted);padding:2rem">
+              <div class="loading" style="display:inline-block"></div>
+            </td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+</div>
+
+<div id="toast-container" class="toast-container"></div>
+<script src="/js/app.js"></script>
+<script>initExchange();</script>
+</body>
+</html>
