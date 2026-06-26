@@ -164,6 +164,6 @@ Este projeto foi desenvolvido **intencionalmente** com vulnerabilidades para fin
 | Dependências com CVEs | `backend/requirements.txt` | pip-audit |
 | SQL Injection | `backend/routes/transactions.py` | Semgrep/Bandit |
 | subprocess shell=True | `backend/utils.py` | Bandit B602 |
-| Container como root | `Dockerfile` | Checkov CKV_DOCKER_8 |
-| Porta PostgreSQL exposta | `docker-compose.yml` | Checkov |
+| Container como root | `Dockerfile` | Trivy DS-0002 |
+| Porta PostgreSQL exposta | `docker-compose.yml` | Checkov (Porta) |
 | Stack trace na resposta | `backend/main.py` | OWASP ZAP |
