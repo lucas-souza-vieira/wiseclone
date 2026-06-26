@@ -109,7 +109,7 @@ DAST & \textbf{OWASP ZAP} & Ferramenta DAST mais utilizada globalmente, baseline
 \end{table}
 
 \subsection{Vulnerabilidades Intencionais (Por Design)}
-Para atender ao propósito acadêmico de testar as ferramentas de segurança, o sistema foi desenvolvido \textbf{intencionalmente} com diversas vulnerabilidades. O sucesso do pipeline consiste em conseguir detectá-las. As vulnerabilidades injetadas foram:
+O WiseClone possui uma regra de negócio financeira íntegra e funcional. Contudo, para fins de estresse empírico e validação de sensibilidade das regras de detecção da esteira DevSecOps, foram injetados vetores clássicos de vulnerabilidade (baseados no OWASP Top 10) em pontos isolados da camada de dados e infraestrutura:
 
 \begin{table}[h]
 \centering
@@ -369,6 +369,38 @@ return JSONResponse(content={"traceback": traceback.format_exc()})  # expo inter
 logger.error(f"Exception: {exc}", exc_info=True)  # log interno
 return JSONResponse(status_code=500, content={"detail": "Erro interno do servidor"})
 \end{lstlisting}
+
+\subsection{[CRÍTICA] — Credenciais Hardcoded no Repositório (Gitleaks)}
+\textbf{Arquivos:} \texttt{backend/config.py} e \texttt{docker-compose.yml}
+
+\textbf{Vulnerável:}
+\begin{lstlisting}[language=Python]
+# backend/config.py (Linha 11)
+SECRET_KEY = "wiseclone-jwt-secret-key-do-not-use-in-production-1234"
+
+# docker-compose.yml (Linha 33)
+POSTGRES_PASSWORD: "wiseclone123"
+\end{lstlisting}
+
+\textbf{Impacto:} Um atacante com acesso ao repositório pode usar as credenciais para acessar o banco de dados em produção ou forjar tokens JWT válidos, comprometendo todo o sistema de autenticação.
+
+\textbf{Correção Prática (Isolamento):}
+\begin{lstlisting}[language=Python]
+# backend/config.py
+import os
+SECRET_KEY = os.getenv("SECRET_KEY", "default-fallback-se-necessario")
+
+# docker-compose.yml
+POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+\end{lstlisting}
+\textit{Nota: As variáveis reais devem ser providas via arquivo \texttt{.env} ignorado pelo versionamento (\texttt{.gitignore}) ou gerenciador de segredos nativo do CI/CD.}
+
+\textbf{Correção Definitiva (Histórico Git):}
+Em um cenário real de vazamento, apenas isolar a variável no commit atual não é suficiente, pois a credencial continuaria salva no histórico de commits do repositório. A remediação completa exige:
+\begin{enumerate}
+    \item \textbf{Revogação e Rotação:} Invalidação imediata da \texttt{SECRET_KEY} e das senhas antigas em produção.
+    \item \textbf{Limpeza da Árvore Git:} Reescrever o histórico do Git para expurgar permanentemente os arquivos/commits contendo o vazamento utilizando ferramentas especializadas como \texttt{git filter-repo} ou \texttt{BFG Repo-Cleaner}.
+\end{enumerate}
 
 \section{Conclusão}
 O pipeline DevSecOps implementado no WiseClone detectou vulnerabilidades reais em todas as cinco categorias avaliadas. O sistema financeiro simulado gerou superfície de ataque adequada para demonstrar o ciclo completo: \textbf{detecção $\rightarrow$ análise $\rightarrow$ remediação $\rightarrow$ validação}. As correções aplicadas seguem as melhores práticas da indústria (OWASP Top 10, CIS Benchmarks para Docker).

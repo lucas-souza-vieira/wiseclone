@@ -70,7 +70,7 @@ A escolha de um sistema financeiro é estratégica: domínios financeiros são a
 
 ### 1.6 Vulnerabilidades Intencionais (Por Design)
 
-Para atender ao propósito acadêmico de testar as ferramentas de segurança, o sistema foi desenvolvido **intencionalmente** com diversas vulnerabilidades. O sucesso do pipeline consiste em conseguir detectá-las. As vulnerabilidades injetadas foram:
+O WiseClone possui uma regra de negócio financeira íntegra e funcional. Contudo, para fins de estresse empírico e validação de sensibilidade das regras de detecção da esteira DevSecOps, foram injetados vetores clássicos de vulnerabilidade (baseados no OWASP Top 10) em pontos isolados da camada de dados e infraestrutura:
 
 | Vulnerabilidade Injetada | Arquivo | Ferramenta Alvo |
 |-------------------------|---------|-----------------|
@@ -331,6 +331,39 @@ return JSONResponse(content={"traceback": traceback.format_exc()})  # expõe int
 logger.error(f"Exception: {exc}", exc_info=True)  # log interno
 return JSONResponse(status_code=500, content={"detail": "Erro interno do servidor"})
 ```
+
+---
+
+### 4.7 🔴 CRÍTICA — Credenciais Hardcoded no Repositório (Gitleaks)
+
+**Arquivos:** `backend/config.py` e `docker-compose.yml`
+
+**Vulnerável:**
+```python
+# backend/config.py (Linha 11)
+SECRET_KEY = "wiseclone-jwt-secret-key-do-not-use-in-production-1234"
+
+# docker-compose.yml (Linha 33)
+POSTGRES_PASSWORD: "wiseclone123"
+```
+
+**Impacto:** Um atacante com acesso ao repositório pode usar as credenciais para acessar o banco de dados em produção ou forjar tokens JWT válidos, comprometendo todo o sistema de autenticação.
+
+**Correção Prática (Isolamento):**
+```python
+# backend/config.py
+import os
+SECRET_KEY = os.getenv("SECRET_KEY", "default-fallback-se-necessario")
+
+# docker-compose.yml
+POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+```
+*Nota: As variáveis reais devem ser providas via arquivo `.env` ignorado pelo versionamento (`.gitignore`) ou gerenciador de segredos nativo do CI/CD.*
+
+**Correção Definitiva (Histórico Git):**
+Em um cenário real de vazamento, apenas isolar a variável no commit atual não é suficiente, pois a credencial continuaria salva no histórico de commits do repositório. A remediação completa exige:
+1. **Revogação e Rotação:** Invalidação imediata da `SECRET_KEY` e das senhas antigas em produção.
+2. **Limpeza da Árvore Git:** Reescrever o histórico do Git para expurgar permanentemente os arquivos/commits contendo o vazamento utilizando ferramentas especializadas como `git filter-repo` ou `BFG Repo-Cleaner`.
 
 ---
 
