@@ -158,27 +158,35 @@ function renderWallets(accounts) {
 }
 
 function renderStats(accounts, txs) {
-  const totalBRL = accounts.find(a => a.currency === 'BRL')?.balance || 0;
+  // Saldo de todas as carteiras que têm saldo > 0
+  const brlAcc = accounts.find(a => a.currency === 'BRL');
+  const totalBRL = brlAcc ? parseFloat(brlAcc.balance) : 0;
   const totalTxs = txs.length;
-  const sent = txs.filter(t => t.sender_id === Storage.user()?.id).length;
+  const userId = Storage.user()?.id;
+  const sent = txs.filter(t => t.sender_id === userId).length;
 
   const els = {
     'stat-balance': formatCurrency(totalBRL, 'BRL'),
     'stat-transactions': totalTxs,
     'stat-sent': sent,
-    'stat-currencies': accounts.length,
+    'stat-currencies': accounts.filter(a => parseFloat(a.balance) > 0).length,
   };
   Object.entries(els).forEach(([id, val]) => {
     const el = document.getElementById(id);
     if (el) el.textContent = val;
   });
+
+  // Atualizar subtítulo do stat de moedas
+  const currLabel = document.querySelector('#stat-currencies')?.closest('.stat-card')?.querySelector('.change');
+  const activeCurrencies = accounts.filter(a => parseFloat(a.balance) > 0).map(a => a.currency).join(', ');
+  if (currLabel && activeCurrencies) currLabel.textContent = activeCurrencies;
 }
 
 function renderRecentTransactions(txs) {
   const tbody = document.getElementById('recent-tx-body');
   if (!tbody) return;
   if (!txs.length) {
-    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--text-muted);padding:2rem">Nenhuma transação ainda</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--text-muted);padding:2rem">Nenhuma transação ainda. <a href="/transfer.html" style="color:var(--accent-light)">Fazer primeira transferência →</a></td></tr>';
     return;
   }
   const userId = Storage.user()?.id;
@@ -186,12 +194,15 @@ function renderRecentTransactions(txs) {
     const isOut = tx.sender_id === userId;
     const sign = isOut ? '-' : '+';
     const cls = isOut ? 'amount-negative' : 'amount-positive';
+    const direction = isOut
+      ? `<span style="color:var(--accent-red);font-size:0.8rem">↑ Enviado</span>`
+      : `<span style="color:var(--accent-green);font-size:0.8rem">↓ Recebido</span>`;
     return `
       <tr>
         <td>${formatDate(tx.created_at)}</td>
-        <td>${tx.description || '—'}</td>
+        <td>${tx.description || '—'}<br>${direction}</td>
         <td><span class="${cls}">${sign}${formatCurrency(tx.amount, tx.currency_from)}</span></td>
-        <td>${tx.currency_from} → ${tx.currency_to}</td>
+        <td style="font-size:0.85rem">${tx.currency_from} → ${tx.currency_to}<br><span style="color:var(--text-muted)">taxa: ${parseFloat(tx.exchange_rate).toFixed(4)}</span></td>
         <td><span class="badge badge-green">${tx.status}</span></td>
       </tr>`;
   }).join('');
