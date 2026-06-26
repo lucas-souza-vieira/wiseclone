@@ -1,6 +1,6 @@
 # WiseClone 🌍💸
 
-**Banco internacional simulado** — Projeto acadêmico de DevSecOps (INE5680 — Segurança em Computação, UFSC 2026-1)
+**Banco internacional simulado** — Projeto acadêmico de DevSecOps (Segurança em Computação, UFSC 2026-1)
 
 ## Sobre o Sistema
 
