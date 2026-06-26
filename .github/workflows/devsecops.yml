@@ -129,7 +129,7 @@ jobs:
         uses: bridgecrewio/checkov-action@master
         with:
           directory: .
-          framework: dockerfile,docker_compose
+          framework: dockerfile
           output_format: json
           output_file_path: checkov-report.json
           soft_fail: true
