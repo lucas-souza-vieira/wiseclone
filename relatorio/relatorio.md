@@ -72,15 +72,17 @@ A escolha de um sistema financeiro é estratégica: domínios financeiros são a
 
 > 💡 **Nota sobre os Artefatos:** Todos os relatórios brutos gerados pelas ferramentas durante a execução do pipeline (como o SARIF do Gitleaks, relatórios JSON do Bandit e Semgrep, e o HTML completo do ZAP) foram salvos e estão disponíveis na pasta `artifacts/` deste repositório. O histórico completo de execução também pode ser validado publicamente na aba "Actions" do GitHub.
 
+> 🛠️ **Nota Arquitetural sobre o Pipeline Acadêmico:** Para que fosse possível coletar e analisar o resultado de **todas** as ferramentas em uma única execução, configuramos o pipeline com `continue-on-error: true`. Em um ambiente real de DevSecOps, qualquer falha crítica (como o vazamento de um secret) bloquearia o deploy e reprovaria o pipeline (Exit Code 1) imediatamente. Aqui, permitimos que ele continue apenas para fins de mapeamento acadêmico e registro no relatório. Permitir que o pipeline termine "Verde" não significa aprovar Falsos Positivos, mas sim permitir a geração completa das evidências.
+
 ### 2.1 Secret Detection — Gitleaks
 
 **Secrets encontrados (esperados):**
 
 | Arquivo | Linha | Tipo | Valor |
 |---------|-------|------|-------|
-| `backend/config.py` | - | generic-api-key | `wiseclone-jwt-secret-key...` |
-| `docker-compose.yml` | - | generic-api-key | `wiseclone-jwt-secret-key...` |
-| `docker-compose.yml` | - | password | `wiseclone123` |
+| `backend/config.py` | 11 | generic-api-key | `wiseclone-jwt-secret-key...` |
+| `docker-compose.yml` | 14 | generic-api-key | `wiseclone-jwt-secret-key...` |
+| `docker-compose.yml` | 33 | password | `wiseclone123` |
 
 ![Saída do Gitleaks no Actions](images/gitleaks.png)
 
