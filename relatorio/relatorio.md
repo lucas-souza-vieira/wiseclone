@@ -4,9 +4,9 @@
 ---
 
 > **Sistema:** WiseClone — Banco Internacional Simulado
-> **Repositório:** *(link do GitHub após publicação)*
+> **Repositório:** [https://github.com/lucas-souza-vieira/wiseclone](https://github.com/lucas-souza-vieira/wiseclone)
 > **Pipeline:** GitHub Actions
-> **Data de entrega:** *(preencher)*
+> **Data de entrega:** 26/06/2026
 
 ---
 
@@ -70,7 +70,7 @@ A escolha de um sistema financeiro é estratégica: domínios financeiros são a
 
 ## 2. Evidências de Execução
 
-> ⚠️ Esta seção será completada com logs reais e capturas de tela após execução do pipeline no GitHub Actions.
+> 💡 **Nota sobre os Artefatos:** Todos os relatórios brutos gerados pelas ferramentas durante a execução do pipeline (como o SARIF do Gitleaks, relatórios JSON do Bandit e Semgrep, e o HTML completo do ZAP) foram salvos e estão disponíveis na pasta `artifacts/` deste repositório. O histórico completo de execução também pode ser validado publicamente na aba "Actions" do GitHub.
 
 ### 2.1 Secret Detection — Gitleaks
 
@@ -78,79 +78,82 @@ A escolha de um sistema financeiro é estratégica: domínios financeiros são a
 
 | Arquivo | Linha | Tipo | Valor |
 |---------|-------|------|-------|
-| `backend/config.py` | 10 | generic-api-key | `wiseclone-jwt-secret-key-2024-super-secret` |
-| `backend/config.py` | 13 | generic-api-key | `xch_live_sk-f8d3a2b1c9e7f4d6...` |
-| `docker-compose.yml` | 18 | generic-api-key | `wiseclone-jwt-secret-key-2024-super-secret` |
-| `docker-compose.yml` | 22 | password | `wiseclone123` |
+| `backend/config.py` | - | generic-api-key | `wiseclone-jwt-secret-key...` |
+| `docker-compose.yml` | - | generic-api-key | `wiseclone-jwt-secret-key...` |
+| `docker-compose.yml` | - | password | `wiseclone123` |
 
-*[INSERIR: Screenshot da saída do Gitleaks no Actions]*
+![Saída do Gitleaks no Actions](images/gitleaks.png)
+
+Como podemos ver na captura de tela acima, o Gitleaks encerrou com `Unexpected exit code [1]`, o que é o comportamento correto e esperado quando segredos são encontrados no repositório.
 
 ### 2.2 SCA — pip-audit
 
-**CVEs encontradas:**
+A execução do pip-audit encontrou **56 vulnerabilidades conhecidas distribuídas em 18 pacotes**, refletindo bibliotecas com versões intencionalmente defasadas.
 
-| Pacote | Versão | CVE | Severidade |
-|--------|--------|-----|-----------|
-| `python-jose` | 3.3.0 | CVE-2024-33663 | Alta |
-| `cryptography` | 39.0.1 | CVE-2023-23931 | Média |
-| `Pillow` | 9.4.0 | CVE-2023-44271 | Alta |
+**Principais CVEs encontradas:**
 
-*[INSERIR: Screenshot da saída do pip-audit]*
+| Pacote | Versão | Exemplo de CVE |
+|--------|--------|-----|
+| `python-jose` | 3.3.0 | CVE-2024-33663 |
+| `cryptography` | 39.0.1 | CVE-2023-23931, CVE-2023-50782 |
+| `Pillow` | 9.4.0 | CVE-2023-44271, CVE-2024-28219 |
+| `fastapi` | 0.95.2 | PYSEC-2024-38 |
+
+![Saída do pip-audit com as 56 vulnerabilidades](images/pip-audit.png)
 
 ### 2.3 SAST — Bandit + Semgrep
 
 **Alertas Bandit:**
 
-| Arquivo | Linha | ID | Severidade |
-|---------|-------|----|-----------|
-| `backend/utils.py` | 17 | B602 | Alta — subprocess shell=True |
-| `backend/config.py` | 10 | B105 | Média — Hardcoded password |
-| `backend/main.py` | 41 | B110 | Baixa — traceback exposto |
+Conforme evidenciado pelo log, o Bandit encontrou os seguintes alertas de segurança:
+
+| ID | Regra | Severidade | Arquivo |
+|----|-------|-----------|---------|
+| B602 | `subprocess_popen_with_shell_equals_true` | Alta | `backend/utils.py` |
+| B608 | `hardcoded_sql_expressions` | Média | `backend/routes/transactions.py` |
+| B104 | `hardcoded_bind_all_interfaces` | Média | `backend/config.py` |
+
+![Saída do Bandit](images/bandit.png)
 
 **Alertas Semgrep:**
 
-| Arquivo | Linha | Regra |
-|---------|-------|-------|
-| `backend/utils.py` | 17 | subprocess-shell-true |
-| `backend/routes/transactions.py` | 65 | sql-injection |
+O Semgrep detectou com sucesso 2 "blocking findings" utilizando as regras de segurança configuradas (392 regras da comunidade executadas).
 
-*[INSERIR: Screenshot bandit-report.json / semgrep-report.json]*
+![Saída do Semgrep](images/semgrep.png)
 
 ### 2.4 IaC Scanning — Checkov + Trivy
 
-**Alertas Checkov:**
+**Alertas Trivy (IaC Scanning):**
+
+Após o ajuste no pipeline, a análise de infraestrutura como código (IaC) foi executada com sucesso. O Trivy detectou 2 configurações incorretas (misconfigurations) no arquivo `Dockerfile`:
 
 | Check ID | Arquivo | Severidade | Descrição |
 |----------|---------|-----------|-----------|
-| CKV_DOCKER_3 | Dockerfile | Alta | Sem HEALTHCHECK |
-| CKV_DOCKER_8 | Dockerfile | Alta | Container como root |
-| CKV_DOCKER_2 | Dockerfile | Média | Tag latest |
-| CKV2_DOCKER_1 | docker-compose.yml | Alta | Sem security_opt |
-| CKV_DOCKER_COMPOSE_2 | docker-compose.yml | Alta | Porta 5432 exposta |
-| CKV_DOCKER_COMPOSE_3 | docker-compose.yml | Alta | Senha fraca hardcoded |
+| DS-0002 | Dockerfile | Alta (HIGH) | O container roda como usuário `root`. Faltou a instrução `USER` com usuário não-root. |
+| DS-0026 | Dockerfile | Baixa (LOW) | Faltou a instrução `HEALTHCHECK` para monitoramento de saúde do container. |
 
-*[INSERIR: Screenshot checkov-report.json]*
+![Saída do Trivy com análise do Dockerfile](images/checkov.png)
 
 ### 2.5 DAST — OWASP ZAP
 
-| ID | Risco | Alerta | Endpoint |
-|----|-------|--------|----------|
-| 10202 | Alto | Absence of Anti-CSRF Tokens | POST /auth/register |
-| 10038 | Médio | CSP Header Not Set | Todos |
-| 10036 | Médio | Server Leaks Version | Header Server |
-| 10021 | Médio | X-Content-Type-Options Missing | Todos |
+| Risco | Alerta | Instâncias |
+|-------|--------|------------|
+| Baixo | Cross-Origin-Resource-Policy Header Missing or Invalid | 2 |
+| Baixo | X-Content-Type-Options Header Missing | 2 |
 
-*[INSERIR: Screenshot relatório HTML do ZAP]*
+*(O ZAP também detectou 5 alertas Informacionais relacionados à política de cache e fetch headers).*
+
+![Relatório OWASP ZAP](images/zap.png)
 
 ---
 
 ## 3. Análise de Falsos Positivos e Alertas Irrelevantes
 
-### 3.1 OWASP ZAP — Anti-CSRF em API REST
+### 3.1 OWASP ZAP — Headers Ausentes (CORP e X-Content-Type-Options)
 
-**Alerta:** "Anti-CSRF Tokens Not Found" nos endpoints POST
-**Classificação:** **Falso Positivo**
-**Justificativa técnica:** O OWASP ZAP aplica heurísticas de CSRF desenvolvidas para aplicações web tradicionais com sessões baseadas em cookies. O WiseClone é uma API REST stateless autenticada via **JWT no header `Authorization: Bearer`**. Ataques CSRF requerem que o browser envie automaticamente credenciais de sessão. Como a API usa Bearer tokens (não cookies de sessão), um atacante não consegue forjar requisições cross-site válidas — o token JWT não é enviado automaticamente em requisições de terceiros. Este alerta é tecnicamente inaplicável para APIs REST com JWT.
+**Alerta:** "Cross-Origin-Resource-Policy Header Missing" e "X-Content-Type-Options Header Missing"
+**Classificação:** **Risco Aceitável no Contexto (Low)**
+**Justificativa técnica:** A aplicação FastAPI está sendo servida diretamente pelo uvicorn para fins de laboratório. Em um ambiente de produção real, o backend estaria atrás de um Proxy Reverso (como NGINX ou Traefik) ou um API Gateway, que seria o responsável por injetar esses headers de segurança na resposta HTTP. Implementar isso no código da API não é estritamente necessário se a infraestrutura for configurada corretamente.
 
 ### 3.2 Bandit B110 — except genérico em utils.py
 
@@ -163,10 +166,10 @@ A escolha de um sistema financeiro é estratégica: domínios financeiros são a
 **Classificação:** **Falso Positivo de baixo risco contextual**
 **Justificativa:** Esta advisory refere-se a um timing attack teórico em implementações específicas de passlib que não se aplicam ao uso do WiseClone (apenas bcrypt é utilizado, que possui proteção nativa). Suprimido com `--ignore-vuln GHSA-jfh8-c2jp-5kf4`.
 
-### 3.4 ZAP — "Server Leaks Version Information"
+### 3.4 Outros Alertas Informacionais do ZAP
 
 **Classificação:** **Falso Positivo de baixo impacto contextual**
-**Justificativa:** O header `Server: uvicorn` é gerado automaticamente pelo servidor ASGI. Em produção, seria suprimido via proxy reverso (nginx). Para ambiente de staging (contexto desta análise), divulgação da versão representa risco mínimo e é esperada durante o ciclo de desenvolvimento.
+**Justificativa:** Os alertas de "Storable and Cacheable Content" ou falta de headers de "Sec-Fetch" são avisos padrão do ZAP para conteúdos estáticos. Como o pipeline realizou um *baseline scan* rápido contra a API REST sem proxy reverso, esses avisos são esperados e não afetam diretamente o core bancário.
 
 ---
 
