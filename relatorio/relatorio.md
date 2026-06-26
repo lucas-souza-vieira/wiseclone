@@ -66,6 +66,20 @@ A escolha de um sistema financeiro é estratégica: domínios financeiros são a
 | IaC Scanning | **Checkov** + **Trivy** | Checkov referência para Dockerfile/docker-compose; Trivy complementa com análise de imagens |
 | DAST | **OWASP ZAP** | Ferramenta DAST mais utilizada globalmente, baseline scan adequado para APIs REST |
 
+### 1.6 Vulnerabilidades Intencionais (Por Design)
+
+Para atender ao propósito acadêmico de testar as ferramentas de segurança, o sistema foi desenvolvido **intencionalmente** com diversas vulnerabilidades. O sucesso do pipeline consiste em conseguir detectá-las. As vulnerabilidades injetadas foram:
+
+| Vulnerabilidade Injetada | Arquivo | Ferramenta Alvo |
+|-------------------------|---------|-----------------|
+| API Key e senhas hardcoded | `backend/config.py`, `docker-compose.yml` | Gitleaks |
+| Dependências desatualizadas com CVEs | `backend/requirements.txt` | pip-audit |
+| SQL Injection via string formating | `backend/routes/transactions.py` | Semgrep / Bandit |
+| Command Injection (subprocess shell=True) | `backend/utils.py` | Bandit |
+| Container rodando como root | `Dockerfile` | Trivy |
+| Porta do banco de dados exposta | `docker-compose.yml` | Trivy |
+| Vazamento de Stack Trace | `backend/main.py` | OWASP ZAP |
+
 ---
 
 ## 2. Evidências de Execução
@@ -76,7 +90,7 @@ A escolha de um sistema financeiro é estratégica: domínios financeiros são a
 
 ### 2.1 Secret Detection — Gitleaks
 
-**Secrets encontrados (esperados):**
+**Secrets encontrados (Vulnerabilidade Plantada Intencionalmente):**
 
 | Arquivo | Linha | Tipo | Valor |
 |---------|-------|------|-------|
@@ -90,7 +104,7 @@ Como podemos ver na captura de tela acima, o Gitleaks encerrou com `Unexpected e
 
 ### 2.2 SCA — pip-audit
 
-A execução do pip-audit encontrou **56 vulnerabilidades conhecidas distribuídas em 18 pacotes**, refletindo bibliotecas com versões intencionalmente defasadas.
+A execução do pip-audit encontrou **56 vulnerabilidades conhecidas distribuídas em 18 pacotes**. Isso valida o comportamento esperado da ferramenta, uma vez que o arquivo `requirements.txt` foi preenchido **intencionalmente** com versões antigas e vulneráveis de bibliotecas críticas.
 
 **Principais CVEs encontradas:**
 
@@ -107,7 +121,7 @@ A execução do pip-audit encontrou **56 vulnerabilidades conhecidas distribuíd
 
 **Alertas Bandit:**
 
-Conforme evidenciado pelo log, o Bandit encontrou os seguintes alertas de segurança:
+Conforme evidenciado pelo log, o Bandit detectou com sucesso as falhas de código **intencionalmente inseridas**:
 
 | ID | Regra | Severidade | Arquivo |
 |----|-------|-----------|---------|
@@ -119,7 +133,7 @@ Conforme evidenciado pelo log, o Bandit encontrou os seguintes alertas de segura
 
 **Alertas Semgrep:**
 
-O Semgrep detectou com sucesso 2 "blocking findings" utilizando as regras de segurança configuradas (392 regras da comunidade executadas).
+O Semgrep detectou com sucesso a vulnerabilidade de SQL Injection plantada no código, classificando-a como um "blocking finding".
 
 ![Saída do Semgrep](images/semgrep.png)
 
@@ -127,7 +141,7 @@ O Semgrep detectou com sucesso 2 "blocking findings" utilizando as regras de seg
 
 **Alertas Trivy (IaC Scanning):**
 
-Após o ajuste no pipeline, a análise de infraestrutura como código (IaC) foi executada com sucesso. O Trivy detectou 2 configurações incorretas (misconfigurations) no arquivo `Dockerfile`:
+A análise de infraestrutura como código (IaC) foi executada com sucesso. O Trivy detectou exatamente as 2 configurações perigosas **deixadas de propósito** no arquivo `Dockerfile`:
 
 | Check ID | Arquivo | Severidade | Descrição |
 |----------|---------|-----------|-----------|
