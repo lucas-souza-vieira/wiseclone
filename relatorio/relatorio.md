@@ -1,5 +1,5 @@
 # Relatório Técnico — Trabalho de DevSecOps
-## Disciplina: INE5680 — Segurança em Computação · UFSC · 2026-1
+## Disciplina: INE5429 — Segurança em Computação · UFSC · 2026-1
 
 ---
 
@@ -340,4 +340,4 @@ O pipeline DevSecOps implementado no WiseClone detectou vulnerabilidades reais e
 
 ---
 
-*INE5680 — Segurança em Computação | UFSC | 2026-1*
+*INE5429 — Segurança em Computação | UFSC | 2026-1*
